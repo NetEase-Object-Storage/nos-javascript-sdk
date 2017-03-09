@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+	<html>
+	<head>
+		<title>NOS SDK for JavaScript - Sample Application</title>
+		<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.js"></script>
+		<script type="text/javascript" src="js/crypto-js.js" ></script>
+		<script type="text/javascript" src="js/nos-js-sdk.js"></script>
+	</head>
+
+	<body>
+
+	<input type="file" id="fileInput" />
+	<button id="fileUploadBtn">上传</button>
+
+	<script type="text/javascript">
+		var uploader = Uploader();		
+		
+		$('#fileInput').on('change', function(e) {
+			if (e.target.files) { 
+				uploader.addFile(e.target.files[0], function(curFile){
+					console.log(curFile.fileName + ' is added.');
+				});
+			}
+		});
+		$('#fileUploadBtn').on('click', function(){
+			var param = {
+				bucketName: 'your bucket name',
+				objectName: 'you object name',
+				token: 'upload token',
+				trunkSize: 'size of trunk',        
+			}
+			uploader.upload(param, function(curFile){
+				console.log('File: ' + curFile.fileName + ' is uploaded.');
+			});
+		});	
+	</script>
+
+	</body>
+	</html>
