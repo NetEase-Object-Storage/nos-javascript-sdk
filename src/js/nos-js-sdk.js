@@ -97,10 +97,9 @@ function Uploader(options){
          * 清除本地存储
          * @param {Object} fileKey 文件标识符
          */
-        clearStorage: function(fileKey) {
+        clearStorage: function(bucketName, objectName, fileKey) {
             localStorage.removeItem(fileKey + '_progress');
-            localStorage.removeItem(fileKey + '_context');
-            localStorage.removeItem(fileKey + '_created');    
+            localStorage.removeItem(fileKey + '_' + bucketName + '_' + objectName + '_context');  
         },
         /**
 		 * 添加文件
@@ -132,7 +131,6 @@ function Uploader(options){
 				if(service.uploadFile)
 					service.uploadFile = null;
 				service.uploadFile = $.extend(true, {}, fileObj);
-	            localStorage.setItem(fileKey + '_created', +new Date());
 	            if(callback)
 	            	callback(fileObj);
 			}            
@@ -217,7 +215,7 @@ function Uploader(options){
          */
         getOffset: function(param, callback) {
             var context;
-            context = localStorage.getItem(param.fileKey + '_context');
+            context = localStorage.getItem(param.fileKey + '_' + param.bucketName + '_' + param.objectName + '_context');
             if (!context) {
                 return callback(0);
             }
@@ -251,7 +249,7 @@ function Uploader(options){
                 		opts.onError(xhr.responseText);
                 		service.gORetryCount = opts.retryCount;
                 		if(xhr.status === 404){
-	                        service.clearStorage(param.fileKey);
+	                        service.clearStorage(param.bucketName, param.objectName, param.fileKey);
 	                    }
                 	}                    	
                 }
@@ -287,7 +285,7 @@ function Uploader(options){
                 blobSlice = File.prototype.mozSlice || File.prototype.webkitSlice || File.prototype.slice;
                 
             curFile = service.getFile(trunkData.fileKey);
-            context = localStorage.getItem(trunkData.fileKey + '_context');
+            context = localStorage.getItem(trunkData.fileKey + '_' + param.bucketName + '_' + param.objectName + '_context');
 
             if (curFile.xhr) {
                 xhr = curFile.xhr;
@@ -340,7 +338,7 @@ function Uploader(options){
                 		curFile.progress = 100.00;
                 		opts.onProgress(curFile);
                 	};
-                    localStorage.setItem(trunkData.fileKey + '_context', result.context);
+                    localStorage.setItem(trunkData.fileKey + '_' + param.bucketName + '_' + param.objectName + '_context', result.context);
                     
                     if (result.offset < trunkData.file.size) {//上传下一片
                         service.uploadTrunk(param, $.extend({}, trunkData, {
@@ -364,7 +362,7 @@ function Uploader(options){
                 			service.uploadTrunk(param, $.extend({}, trunkData, {
                 				offset: offset,
                 				trunkEnd: offset + trunkData.trunkSize,
-                            	context: localStorage.getItem(trunkData.fileKey + '_context') || '',
+                            	context: localStorage.getItem(trunkData.fileKey + '_' + param.bucketName + '_' + param.objectName + '_context') || '',
                 			}), callback);
                 		});
                 		service.uTRetryCount--;
@@ -384,7 +382,7 @@ function Uploader(options){
                 			service.uploadTrunk(param1, $.extend({}, trunkData, {
                 				offset: offset,
                 				trunkEnd: offset + trunkData.trunkSize,
-                            	context: localStorage.getItem(trunkData.fileKey + '_context') || '',
+                            	context: localStorage.getItem(trunkData.fileKey + '_' + param.bucketName + '_' + param.objectName + '_context') || '',
                 			}), callback);
                 		});	                		
                 	} else {//重试完输出错误信息
@@ -395,12 +393,12 @@ function Uploader(options){
 	                    }); 	
 	                   
 	                   	$('#' + opts.fileInputID).attr("disabled", false);
-                		service.clearStorage(trunkData.fileKey);
+                		service.clearStorage(param.bucketName, param.objectName, trunkData.fileKey);
                 	}
                 }else{
                 	$('#' + opts.fileInputID).attr("disabled", false); 
 	              	if(xhr.status){
-	                    service.clearStorage(trunkData.fileKey);
+	                    service.clearStorage(param.bucketName, param.objectName, trunkData.fileKey);
 	                    opts.onError({
 	                        errCode: result.errCode,
 	                        errMsg: result.errMsg
@@ -507,7 +505,7 @@ function Uploader(options){
                         trunkEnd: (offset || 0) + param.trunkSize,
                         context: ''
                     }, function(trunkData) {
-                        service.clearStorage(trunkData.fileKey);   
+                        service.clearStorage(param.bucketName, param.objectName, trunkData.fileKey);   
                         if(callback)
                         	callback(curFile);
                     });
