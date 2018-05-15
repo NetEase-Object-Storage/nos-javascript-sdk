@@ -293,7 +293,6 @@ function Uploader(options){
                 xhr = curFile.xhr;
             } else {
                 xhr = service.createAjax();
-                xhr.timeout = opts.timeout;
                 curFile.xhr = xhr;
             };
             
@@ -414,6 +413,7 @@ function Uploader(options){
             xhrParam = '?offset=' + trunkData.offset + '&complete=' + (trunkData.trunkEnd >= trunkData.file.size) + '&context=' + (context || trunkData.context) + '&version=' + service.version;
             xhr.open('post', param.serveIp + '/' + param.bucketName + '/' + encodeURIComponent(param.objectName) + xhrParam);        
             xhr.setRequestHeader('x-nos-token', param.token);
+            xhr.timeout = opts.timeout;
             xhr.send(blobSlice.call(trunkData.file, trunkData.offset, trunkData.trunkEnd));
         },
         /**
