@@ -412,7 +412,17 @@ function Uploader(options){
             xhr.open('post', param.serveIp + '/' + param.bucketName + '/' + encodeURIComponent(param.objectName) + xhrParam);        
             xhr.setRequestHeader('x-nos-token', param.token);
             xhr.timeout = opts.timeout;
-            xhr.send(blobSlice.call(trunkData.file, trunkData.offset, trunkData.trunkEnd));
+			// 兼容windows版微信内置浏览器
+			if (navigator.userAgent.indexOf("WindowsWechat") >= 0) {
+				var reader = new FileReader();
+				reader.addEventListener("loadend", function () {
+					var slicedBlob = new Blob([reader.result]);
+					xhr.send(slicedBlob);
+				});
+				reader.readAsArrayBuffer(blobSlice.call(trunkData.file, trunkData.offset, trunkData.trunkEnd));
+			} else {
+				xhr.send(blobSlice.call(trunkData.file, trunkData.offset, trunkData.trunkEnd));
+			}
         },
         /**
          * 暂停上传
@@ -468,8 +478,13 @@ function Uploader(options){
         		});
         		return;
         	}
-        	if(!param.trunkSize)
-        		param.trunkSize = 128 * 1024;
+			if (!param.trunkSize) {
+				param.trunkSize = 128 * 1024;
+			} else {
+				if (Object.prototype.toString.call(param.trunkSize) === '[object String]') {
+					param.trunkSize = parseInt(param.trunkSize);
+				}
+			}
 			if(!service.uploadFile){
 				opts.onError({
 					errMsg: '未选择需上传的文件',
